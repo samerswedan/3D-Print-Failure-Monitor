@@ -17,13 +17,13 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "best.pt")
 
 # --- 2. SIDEBAR & UX CONTROLS ---
-st.sidebar.title("🛠️ System Control Panel")
+st.sidebar.title("Settings")
 conf_threshold = st.sidebar.slider(
     "Confidence Threshold",
     0.0,
     1.0,
     0.5,
-    help="Minimum AI confidence to flag a failure.",
+    help="Minimum confidence to flag a failure.",
 )
 buffer_size = st.sidebar.number_input(
     "Consistency Buffer (Frames)",
@@ -34,11 +34,11 @@ buffer_size = st.sidebar.number_input(
 )
 enable_discord = st.sidebar.checkbox("Enable Discord Alerts", value=True)
 
-if st.sidebar.button("🧪 Test Discord Connection"):
+if st.sidebar.button("Test Discord Connection"):
     webhook_url = os.getenv("DISCORD_WEBHOOK_URL")
     if webhook_url:
         test_webhook = DiscordWebhook(
-            url=webhook_url, content="✅ **Guardian AI Connection Test Successful!**"
+            url=webhook_url, content="**Connection Test Successful!**"
         )
         test_webhook.execute()
         st.sidebar.success("Test Sent!")
@@ -60,11 +60,11 @@ def send_alert(frame, conf):
     if webhook_url:
         cv2.imwrite("alert_img.jpg", frame)
         webhook = DiscordWebhook(
-            url=webhook_url, content="🚨 **3D PRINT FAILURE DETECTED**"
+            url=webhook_url, content="🚨 **POSSIBLE 3D PRINT FAILURE DETECTED**"
         )
         embed = DiscordEmbed(
             title="Stability Alert",
-            description=f"AI confirmed failure with {conf:.2%} confidence.",
+            description=f"Possible failure with {conf:.2%} confidence.",
             color="ff0000",
         )
         with open("alert_img.jpg", "rb") as f:
@@ -96,7 +96,8 @@ last_alert_time = 0
 
 # Persistent Camera Recovery Logic
 while True:
-    cap = cv2.VideoCapture(0)
+    # Use DirectShow backend on Windows (more reliable than MSMF)
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     if not cap.isOpened():
         status_container.error("🔴 CAMERA DISCONNECTED - Attempting to reconnect...")
         time.sleep(2)
@@ -122,24 +123,24 @@ while True:
         if failure_detected:
             status_container.error("🔴 ALERT: UNSTABLE PRINT DETECTED")
 
-            conf = results[0].boxes.conf[0].item()
-            curr_time = time.time()
+            # Only access confidence if current frame has detections
+            if is_failing:
+                conf = results[0].boxes.conf[0].item()
+                curr_time = time.time()
 
-            # Log & Alert (60s cooldown)
-            if enable_discord and (curr_time - last_alert_time > 60):
-                send_alert(frame, conf)
-                last_alert_time = curr_time
-                timestamp = time.strftime("%H:%M:%S")
-                st.session_state.logs.insert(
-                    0, f"[{timestamp}] Alert Sent ({conf:.2f})"
-                )
+                # Log & Alert (60s cooldown)
+                if enable_discord and (curr_time - last_alert_time > 60):
+                    send_alert(frame, conf)
+                    last_alert_time = curr_time
+                    timestamp = time.strftime("%H:%M:%S")
+                    st.session_state.logs.insert(
+                        0, f"[{timestamp}] Alert Sent ({conf:.2f})"
+                    )
         else:
             status_container.success("🟢 SYSTEM STATUS: MONITORING")
 
         # Update Visuals
-        frame_placeholder.image(
-            annotated_frame, channels="BGR", use_container_width=True
-        )
+        frame_placeholder.image(annotated_frame, channels="BGR", width="stretch")
         log_placeholder.code("\n".join(st.session_state.logs[:12]))
 
     cap.release()

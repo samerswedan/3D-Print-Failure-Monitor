@@ -60,7 +60,8 @@ def run_monitor():
         return
 
     model = YOLO(MODEL_PATH)
-    cap = cv2.VideoCapture(0)  # 0 = Default Webcam
+    # Use DirectShow backend on Windows (more reliable than MSMF)
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
     detection_history = deque(maxlen=BUFFER_SIZE)
     last_alert_time = 0
