@@ -1,0 +1,13 @@
+# --- Core AI & Computer Vision ---
+ultralytics>=8.3.0
+opencv-python-headless
+torch
+torchvision
+
+# --- Dashboard & UI ---
+streamlit>=1.30.0
+
+# --- Integration & Environment ---
+python-dotenv
+discord-webhook
+numpy

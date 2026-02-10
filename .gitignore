@@ -1,0 +1,29 @@
+# --- Python & Environments ---
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Secrets & Configuration ---
+.env
+.env.*
+!.env.example
+
+# --- AI/ML Artifacts ---
+# We ignore the 'runs' folder because it can contain gigabytes of logs/temp files
+runs/
+data/
+
+# --- Project Specific Artifacts ---
+# Ignore temporary images created by the dashboard alerts
+failure_snapshot.jpg
+temp_alert.jpg
+alert_img.jpg
+latest_failure.jpg
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+
