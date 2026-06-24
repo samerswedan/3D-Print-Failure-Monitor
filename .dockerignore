@@ -1,0 +1,42 @@
+# --- Python & virtual environments ---
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Secrets (pass at runtime instead of baking into the image) ---
+.env
+.env.*
+!.env.example
+
+# --- Heavy ML artifacts not needed at runtime ---
+runs/
+data/
+scripts/
+
+# --- Extra model weights not used by the app (only best.pt is needed) ---
+models/yolo26n.pt
+models/yolov8n.pt
+
+# --- Temporary alert snapshots ---
+failure_snapshot.jpg
+temp_alert.jpg
+alert_img.jpg
+latest_failure.jpg
+
+# --- VCS / project meta ---
+.git/
+.gitignore
+LICENSE
+README.md
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

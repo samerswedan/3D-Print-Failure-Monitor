@@ -1,0 +1,18 @@
+services:
+  guardian:
+    build: .
+    image: 3dprintfailml:latest
+    container_name: 3dprint-guardian
+    ports:
+      - "8501:8501"
+    # Provide DISCORD_WEBHOOK_URL (and any other settings) via a .env file.
+    # Copy .env.example to .env and fill it in.
+    env_file:
+      - .env
+    restart: unless-stopped
+    # --- Webcam passthrough (Linux hosts only) ---
+    # Docker can only pass a host webcam through on Linux. Uncomment the lines
+    # below and adjust the device path to your camera. Note: Docker Desktop on
+    # Windows/macOS cannot pass USB webcams into containers.
+    # devices:
+    #   - "/dev/video0:/dev/video0"

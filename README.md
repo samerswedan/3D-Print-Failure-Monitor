@@ -90,6 +90,49 @@ python main.py
 
 Displays an OpenCV window with the camera feed. Press `q` to quit.
 
+## 🐳 Docker
+
+The Streamlit dashboard can be run in a container. The image is CPU-only
+(no CUDA), runs as a non-root user, and exposes the dashboard on port `8501`.
+
+### Using Docker Compose (recommended)
+
+```bash
+# Configure your Discord webhook first
+cp .env.example .env   # then edit .env
+
+docker compose up --build
+```
+
+Open the dashboard at [http://localhost:8501](http://localhost:8501).
+
+### Using plain Docker
+
+```bash
+docker build -t 3dprintfailml:latest .
+docker run -p 8501:8501 --env-file .env 3dprintfailml:latest
+```
+
+### ⚠️ Webcam access in containers
+
+The container starts and the dashboard loads, but capturing a webcam feed has
+host-specific limitations:
+
+- **Docker Desktop on Windows/macOS cannot pass a USB webcam into a
+  container.** Local-camera monitoring is only possible on a **Linux host**.
+- On a Linux host, pass the camera device through and uncomment the `devices`
+  block in [`docker-compose.yml`](docker-compose.yml):
+
+  ```bash
+  docker run -p 8501:8501 --env-file .env \
+    --device=/dev/video0:/dev/video0 \
+    3dprintfailml:latest
+  ```
+
+  > Note: the capture backend in the code uses Windows DirectShow
+  > (`cv2.CAP_DSHOW`). On Linux it needs the default V4L2 backend, so the
+  > capture call must be adjusted for camera access inside a Linux container.
+
 ## Training Your Own Model
 
 The included model (`models/best.pt`) is pre-trained on 3D print failure data. To train your own:
@@ -116,6 +159,9 @@ This exports the model to NCNN format for efficient inference on ARM devices.
 ├── app.py              # Streamlit web dashboard
 ├── main.py             # CLI monitoring script
 ├── requirements.txt    # Python dependencies
+├── Dockerfile          # Container image for the dashboard
+├── docker-compose.yml  # Compose config (port + env + webcam passthrough)
+├── .dockerignore       # Build context excludes
 ├── .env.example        # Environment variables template
 ├── models/
 │   └── best.pt         # Trained YOLO model
